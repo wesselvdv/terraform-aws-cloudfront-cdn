@@ -13,7 +13,7 @@ resource "aws_cloudfront_origin_access_identity" "default" {
 }
 
 module "logs" {
-  source                   = "git::https://github.com/cloudposse/terraform-aws-log-storage.git?ref=tags/0.2.2"
+  source                   = "git::https://github.com/cloudposse/terraform-aws-log-storage.git?ref=tags/0.6.0"
   namespace                = var.namespace
   stage                    = var.stage
   name                     = var.name
