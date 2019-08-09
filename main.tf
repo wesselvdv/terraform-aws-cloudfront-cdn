@@ -52,7 +52,7 @@ resource "aws_cloudfront_distribution" "default" {
   aliases = var.aliases
 
   dynamic "custom_error_response" {
-    for_each = [var.custom_error_response]
+    for_each = var.custom_error_response
     content {
       # TF-UPGRADE-TODO: The automatic upgrade tool can't predict
       # which keys might be set in maps assigned here, so it has
