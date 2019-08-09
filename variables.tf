@@ -53,7 +53,7 @@ variable "custom_error_response" {
   # https://www.terraform.io/docs/providers/aws/r/cloudfront_distribution.html#custom-error-response-arguments
   description = "(Optional) - List of one or more custom error response element maps"
 
-  type    = list(string)
+  type    = list(object({ error_code = number, response_code = number, error_caching_min_ttl = number, response_page_path = string }))
   default = []
 }
 
