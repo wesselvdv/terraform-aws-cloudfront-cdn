@@ -118,7 +118,7 @@ resource "aws_cloudfront_distribution" "default" {
     content {
       domain_name = origin.value.domain_name
       origin_id   = origin.value.origin_id
-      origin_path = origin.value.origin_path
+      origin_path = lookup(origin.value, "origin_path", "")
 
       custom_origin_config {
         http_port                = lookup(origin.value, "http_port", 80)
