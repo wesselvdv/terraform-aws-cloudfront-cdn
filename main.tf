@@ -12,6 +12,16 @@ resource "aws_cloudfront_origin_access_identity" "default" {
   comment = module.distribution_label.id
 }
 
+module "distribution_label" {
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.3.7"
+  namespace  = var.namespace
+  stage      = var.stage
+  name       = var.name
+  attributes = var.attributes
+  delimiter  = var.delimiter
+  tags       = var.tags
+}
+
 module "logs" {
   source                   = "git::https://github.com/cloudposse/terraform-aws-log-storage.git?ref=tags/0.6.0"
   namespace                = var.namespace
