@@ -80,7 +80,6 @@ resource "aws_cloudfront_distribution" "default" {
       field_level_encryption_id = lookup(default_cache_behavior.value, "field_level_encryption_id", null)
       max_ttl                   = lookup(default_cache_behavior.value, "max_ttl", null)
       min_ttl                   = lookup(default_cache_behavior.value, "min_ttl", null)
-      path_pattern              = default_cache_behavior.value.path_pattern
       smooth_streaming          = lookup(default_cache_behavior.value, "smooth_streaming", null)
       target_origin_id          = default_cache_behavior.value.target_origin_id
       trusted_signers           = lookup(default_cache_behavior.value, "trusted_signers", null)
