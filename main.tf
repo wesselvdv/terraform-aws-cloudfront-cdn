@@ -25,16 +25,6 @@ module "logs" {
   expiration_days          = var.log_expiration_days
 }
 
-module "distribution_label" {
-  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.3.7"
-  namespace  = var.namespace
-  stage      = var.stage
-  name       = var.name
-  attributes = var.attributes
-  delimiter  = var.delimiter
-  tags       = var.tags
-}
-
 resource "aws_cloudfront_distribution" "default" {
   enabled             = var.enabled
   is_ipv6_enabled     = var.is_ipv6_enabled
@@ -53,30 +43,10 @@ resource "aws_cloudfront_distribution" "default" {
   dynamic "custom_error_response" {
     for_each = var.custom_error_response
     content {
-      # TF-UPGRADE-TODO: The automatic upgrade tool can't predict
-      # which keys might be set in maps assigned here, so it has
-      # produced a comprehensive set here. Consider simplifying
-      # this after confirming which keys can be set in practice.
-
       error_caching_min_ttl = lookup(custom_error_response.value, "error_caching_min_ttl", null)
       error_code            = custom_error_response.value.error_code
       response_code         = lookup(custom_error_response.value, "response_code", null)
       response_page_path    = lookup(custom_error_response.value, "response_page_path", null)
-    }
-  }
-
-  origin {
-    domain_name = var.origin_domain_name
-    origin_id   = module.distribution_label.id
-    origin_path = var.origin_path
-
-    custom_origin_config {
-      http_port                = var.origin_http_port
-      https_port               = var.origin_https_port
-      origin_protocol_policy   = var.origin_protocol_policy
-      origin_ssl_protocols     = var.origin_ssl_protocols
-      origin_keepalive_timeout = var.origin_keepalive_timeout
-      origin_read_timeout      = var.origin_read_timeout
     }
   }
 
@@ -87,37 +57,77 @@ resource "aws_cloudfront_distribution" "default" {
     cloudfront_default_certificate = var.acm_certificate_arn == "" ? true : false
   }
 
-  default_cache_behavior {
-    allowed_methods  = var.allowed_methods
-    cached_methods   = var.cached_methods
-    target_origin_id = module.distribution_label.id
-    compress         = var.compress
+  dynamic "default_cache_behavior" {
+    for_each = [
+      for cache_behavior in var.cache_behavior :
+      cache_behavior if cache_behavior == var.cache_behavior[0]
+    ]
+    content {
+      allowed_methods           = default_cache_behavior.value.allowed_methods
+      cached_methods            = default_cache_behavior.value.cached_methods
+      compress                  = lookup(default_cache_behavior.value, "compress", null)
+      default_ttl               = lookup(default_cache_behavior.value, "default_ttl", null)
+      field_level_encryption_id = lookup(default_cache_behavior.value, "field_level_encryption_id", null)
+      max_ttl                   = lookup(default_cache_behavior.value, "max_ttl", null)
+      min_ttl                   = lookup(default_cache_behavior.value, "min_ttl", null)
+      path_pattern              = default_cache_behavior.value.path_pattern
+      smooth_streaming          = lookup(default_cache_behavior.value, "smooth_streaming", null)
+      target_origin_id          = default_cache_behavior.value.target_origin_id
+      trusted_signers           = lookup(default_cache_behavior.value, "trusted_signers", null)
+      viewer_protocol_policy    = default_cache_behavior.value.viewer_protocol_policy
 
-    forwarded_values {
-      headers = var.forward_headers
+      dynamic "forwarded_values" {
+        for_each = lookup(default_cache_behavior.value, "forwarded_values", [])
+        content {
+          headers                 = lookup(forwarded_values.value, "headers", null)
+          query_string            = forwarded_values.value.query_string
+          query_string_cache_keys = lookup(forwarded_values.value, "query_string_cache_keys", null)
 
-      query_string = var.forward_query_string
+          dynamic "cookies" {
+            for_each = lookup(forwarded_values.value, "cookies", [])
+            content {
+              forward           = cookies.value.forward
+              whitelisted_names = lookup(cookies.value, "whitelisted_names", null)
+            }
+          }
+        }
+      }
 
-      cookies {
-        forward           = var.forward_cookies
-        whitelisted_names = var.forward_cookies_whitelisted_names
+      dynamic "lambda_function_association" {
+        for_each = lookup(default_cache_behavior.value, "lambda_function_association", [])
+        content {
+          event_type   = lambda_function_association.value.event_type
+          include_body = lookup(lambda_function_association.value, "include_body", null)
+          lambda_arn   = lambda_function_association.value.lambda_arn
+        }
       }
     }
+  }
 
-    viewer_protocol_policy = var.viewer_protocol_policy
-    default_ttl            = var.default_ttl
-    min_ttl                = var.min_ttl
-    max_ttl                = var.max_ttl
+  dynamic "origin" {
+    for_each = var.origin
+    content {
+      domain_name = origin.value.domain_name
+      origin_id   = origin.value.origin_id
+      origin_path = origin.value.origin_path
+
+      custom_origin_config {
+        http_port                = lookup(origin.value, "http_port", 80)
+        https_port               = lookup(origin.value, "https_port", 443)
+        origin_protocol_policy   = lookup(origin.value, "protocol_policy", "match-viewer")
+        origin_ssl_protocols     = lookup(origin.value, "ssl_protocols", [])
+        origin_keepalive_timeout = lookup(origin.value, "keepalive_timeout", 60)
+        origin_read_timeout      = lookup(origin.value, "read_timeout", 60)
+      }
+    }
   }
 
   dynamic "ordered_cache_behavior" {
-    for_each = var.cache_behavior
+    for_each = [
+      for cache_behavior in var.cache_behavior :
+      cache_behavior if cache_behavior != var.cache_behavior[0]
+    ]
     content {
-      # TF-UPGRADE-TODO: The automatic upgrade tool can't predict
-      # which keys might be set in maps assigned here, so it has
-      # produced a comprehensive set here. Consider simplifying
-      # this after confirming which keys can be set in practice.
-
       allowed_methods           = ordered_cache_behavior.value.allowed_methods
       cached_methods            = ordered_cache_behavior.value.cached_methods
       compress                  = lookup(ordered_cache_behavior.value, "compress", null)
