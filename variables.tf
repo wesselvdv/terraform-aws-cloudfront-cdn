@@ -237,7 +237,6 @@ variable "parent_zone_name" {
 }
 
 variable "cache_behavior" {
-  type        = list(object({ allowed_methods = list(string), cached_methods = list(string), compress = bool, default_ttl = number, field_level_encryption_id = string, max_ttl = number, min_ttl = number, path_pattern = string, smooth_streaming = bool, target_origin_id = string, trusted_signers = list(string), viewer_protocol_policy = string, forwarded_values = object({ headers = list(string), query_string = bool, query_string_cache_keys = list(string), ccookies = object({ forward = string, whitelisted_names = list(string) }) }) }))
   description = "An ordered list of cache behaviors resource for this distribution. List from top to bottom in order of precedence. The topmost cache behavior will have precedence 0."
   default     = []
 }
