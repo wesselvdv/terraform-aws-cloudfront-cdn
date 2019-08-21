@@ -124,7 +124,7 @@ resource "aws_cloudfront_distribution" "default" {
         http_port                = lookup(origin.value, "http_port", 80)
         https_port               = lookup(origin.value, "https_port", 443)
         origin_protocol_policy   = lookup(origin.value, "protocol_policy", "match-viewer")
-        origin_ssl_protocols     = lookup(origin.value, "ssl_protocols", [])
+        origin_ssl_protocols     = lookup(origin.value, "ssl_protocols", ["TLSv1", "TLSv1.1", "TLSv1.2"])
         origin_keepalive_timeout = lookup(origin.value, "keepalive_timeout", 60)
         origin_read_timeout      = lookup(origin.value, "read_timeout", 60)
       }
