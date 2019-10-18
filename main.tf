@@ -1,5 +1,5 @@
 module "origin_label" {
-  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.14.1"
+  source     = "git::https://github.com/cloudposse/terraform-terraform-label.git?ref=tags/0.4.0"
   enabled    = var.enabled
   namespace  = var.namespace
   stage      = var.stage
@@ -15,7 +15,7 @@ resource "aws_cloudfront_origin_access_identity" "default" {
 }
 
 module "distribution_label" {
-  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.3.7"
+  source     = "git::https://github.com/cloudposse/terraform-terraform-label.git?ref=tags/0.4.0"
   enabled    = var.enabled
   namespace  = var.namespace
   stage      = var.stage
