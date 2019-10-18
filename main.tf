@@ -70,7 +70,7 @@ resource "aws_cloudfront_distribution" "default" {
   dynamic "default_cache_behavior" {
     for_each = [
       for cache_behavior in var.cache_behavior :
-      cache_behavior if cache_behavior == var.cache_behavior[0]
+      cache_behavior if length(var.cache_behavior) > 0 && cache_behavior == var.cache_behavior[0]
     ]
     content {
       allowed_methods           = default_cache_behavior.value.allowed_methods
